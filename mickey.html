@@ -1,1 +1,210 @@
-
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Suivi Paiement Moto</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@300;400;500;600&display=swap');
+:root{--bg:#080c14;--card:#0d1420;--card2:#111827;--border:#1a2540;--blue:#3b82f6;--blue-dark:#1d4ed8;--green:#10b981;--green-dark:#065f46;--red:#ef4444;--red-dark:#7f1d1d;--gold:#f59e0b;--text:#f1f5f9;--muted:#64748b;--muted2:#334155}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:0 0 40px}
+.app-header{background:linear-gradient(160deg,#0d1f3c 0%,#080c14 100%);padding:28px 20px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.app-title{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+.app-title span{color:var(--blue)}
+.app-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+.prog-wrap{margin-top:12px;background:var(--border);border-radius:99px;height:6px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#06b6d4);border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 20px 0}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center}
+.stat-val{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--blue)}
+.stat-lbl{font-size:.62rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.alert-banner{margin:14px 20px 0;background:linear-gradient(135deg,#1c1000,#2d1800);border:1px solid var(--gold);border-radius:14px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px}
+.alert-text{font-size:.78rem;color:#fcd34d;line-height:1.5}
+.alert-text strong{display:block;margin-bottom:2px;font-size:.82rem}
+.today-card{margin:16px 20px 0;background:linear-gradient(135deg,#0f2352,#0d1a3a);border:1px solid var(--blue);border-radius:18px;padding:18px;position:relative;overflow:hidden}
+.today-card::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(59,130,246,.2),transparent 70%)}
+.today-label{font-size:.68rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:600;margin-bottom:6px}
+.today-date{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:4px}
+.today-num{font-size:.78rem;color:var(--muted);margin-bottom:18px}
+.today-amount{font-size:1.5rem;font-weight:800;font-family:'Syne',sans-serif;color:var(--green);margin-bottom:18px}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-confirm,.btn-reject{border:none;border-radius:12px;padding:14px 10px;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:transform .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-confirm{background:var(--green);color:#fff}
+.btn-reject{background:var(--red);color:#fff}
+.months-wrap{padding:20px 20px 0}
+.month-card{background:var(--card);border:1px solid var(--border);border-radius:18px;margin-bottom:12px;overflow:hidden;transition:border-color .3s}
+.month-card.complete{border-color:var(--green-dark)}
+.month-card.has-unpaid{border-color:var(--red-dark)}
+.month-hdr{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:var(--card2)}
+.month-hdr-left{display:flex;align-items:center;gap:10px}
+.month-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--text)}
+.month-range{font-size:.72rem;color:var(--muted)}
+.month-badge{font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
+.badge-complete{background:#064e3b;color:#34d399}
+.badge-unpaid{background:#450a0a;color:#fca5a5}
+.badge-partial{background:#1e3a5f;color:#93c5fd}
+.badge-future{background:var(--border);color:var(--muted)}
+.month-body{padding:0 14px 14px}
+.sat-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px}
+.sat-row:last-of-type{border-bottom:none}
+.sat-indicator{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700}
+.ind-paid{background:#064e3b;color:#34d399;border:2px solid var(--green)}
+.ind-unpaid{background:#450a0a;color:#fca5a5;border:2px solid var(--red)}
+.ind-today{background:var(--blue-dark);color:#fff;border:2px solid var(--blue);animation:pulse 2s infinite}
+.ind-past{background:#1a1f2e;color:var(--muted);border:2px solid var(--muted2);cursor:pointer}
+.ind-future{background:var(--border);color:var(--muted2);border:2px solid transparent}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}50%{box-shadow:0 0 0 6px rgba(59,130,246,0)}}
+.sat-info{flex:1;min-width:0}
+.sat-num-lbl{font-size:.65rem;color:var(--muted)}
+.sat-date-txt{font-size:.83rem;font-weight:600;color:var(--text)}
+.sat-date-txt.paid{color:var(--muted);text-decoration:line-through}
+.sat-date-txt.unpaid-txt{color:#fca5a5}
+.sat-date-txt.future-txt{color:var(--muted2)}
+.sat-amount-lbl{font-size:.75rem;font-weight:700;color:var(--green);white-space:nowrap}
+.sat-amount-lbl.unpaid-amt{color:#f87171}
+.sat-amount-lbl.future-amt{color:var(--muted2)}
+.regularize-tag{font-size:.62rem;background:#450a0a;color:#fca5a5;padding:2px 7px;border-radius:99px;margin-top:3px;display:inline-block}
+.lock-tag{font-size:.62rem;background:#1e3a5f;color:#93c5fd;padding:2px 7px;border-radius:99px;margin-top:3px;display:inline-block;cursor:pointer}
+.past-btn-row{display:flex;gap:6px;margin-top:6px}
+.mini-btn{font-size:.65rem;font-weight:700;padding:5px 12px;border-radius:99px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .1s}
+.mini-btn-ok{background:#064e3b;color:#34d399}
+.mini-btn-no{background:#450a0a;color:#fca5a5}
+.month-total{background:var(--bg);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.mtotal-lbl{font-size:.75rem;color:var(--muted);font-weight:600}
+.mtotal-val{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;color:var(--blue)}
+.sig-section{margin-top:14px;padding-top:12px;border-top:1px dashed var(--muted2)}
+.date-cloture{font-size:.72rem;color:var(--muted);margin-bottom:10px}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sig-box{background:var(--bg);border-radius:10px;padding:10px;border:1px solid var(--border)}
+.sig-title{font-size:.68rem;font-weight:700;color:var(--blue);margin-bottom:2px}
+.sig-sub{font-size:.62rem;color:var(--muted);margin-bottom:20px}
+.sig-line{height:1px;background:var(--muted2)}
+.grand-total{margin:20px;background:linear-gradient(135deg,#0f2352,#0d1420);border:1px solid var(--blue);border-radius:20px;padding:24px;text-align:center}
+.gt-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+.gt-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--blue)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-pill{width:40px;height:4px;background:var(--muted2);border-radius:99px;margin:0 auto 20px}
+.modal-icon{font-size:2.2rem;text-align:center;margin-bottom:10px}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:#fff;margin-bottom:4px;text-align:center}
+.modal-sub{font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:20px}
+.pin-wrap{display:flex;justify-content:center;gap:12px;margin-bottom:16px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted2);background:transparent;transition:all .2s}
+.pin-dot.filled{background:var(--blue);border-color:var(--blue)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-dot.success{background:var(--green);border-color:var(--green)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.pin-key{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:16px;font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--text);cursor:pointer;text-align:center;transition:background .1s,transform .1s;user-select:none}
+.pin-key:active{background:var(--blue-dark);transform:scale(.93)}
+.pin-key.del{font-size:.9rem;color:var(--muted)}
+.pin-key.empty{background:transparent;border-color:transparent;cursor:default}
+.pin-error-msg{text-align:center;font-size:.78rem;color:var(--red);margin-bottom:12px;min-height:20px}
+.pin-cancel{width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:12px;font-family:'Inter',sans-serif;font-size:.85rem;cursor:pointer}
+.choice-modal{background:var(--card);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;animation:slideUp .3s ease}
+.choice-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.choice-btn{padding:18px;border-radius:14px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .15s}
+.choice-btn-ok{background:var(--green);color:#fff}
+.choice-btn-no{background:var(--red);color:#fff}
+.choice-btn-icon{font-size:1.6rem}
+.choice-cancel{width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:12px;font-family:'Inter',sans-serif;font-size:.85rem;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app-header">
+  <div class="app-title">Suivi <span>Moto</span></div>
+  <div class="app-sub">15 000 gourdes / samedi · 24 mois · Début 16 Mai 2026</div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+  <div style="display:flex;justify-content:space-between;margin-top:6px">
+    <span style="font-size:.7rem;color:var(--muted)" id="prog-txt">0 / 96 paiements</span>
+    <span style="font-size:.7rem;color:var(--blue)" id="prog-pct">0%</span>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat"><div class="stat-val" id="s-paid">0</div><div class="stat-lbl">Payés</div></div>
+  <div class="stat"><div class="stat-val" id="s-unpaid" style="color:#ef4444">0</div><div class="stat-lbl">Non payés</div></div>
+  <div class="stat"><div class="stat-val" id="s-total" style="color:#10b981;font-size:.82rem">0 G</div><div class="stat-lbl">Perçu</div></div>
+</div>
+<div id="alert-zone"></div>
+<div id="today-zone"></div>
+<div class="months-wrap" id="months"></div>
+<div class="grand-total">
+  <div class="gt-lbl">Total général du contrat</div>
+  <div class="gt-val">1 485 000 gourdes</div>
+</div>
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal">
+    <div class="modal-pill"></div>
+    <div class="modal-icon" id="pin-icon">🔐</div>
+    <div class="modal-title" id="pin-title">Entrez le code</div>
+    <div class="modal-sub" id="pin-sub">Code requis pour continuer</div>
+    <div class="pin-wrap">
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-error-msg" id="pin-err"></div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="pinKey('1')">1</div><div class="pin-key" onclick="pinKey('2')">2</div><div class="pin-key" onclick="pinKey('3')">3</div>
+      <div class="pin-key" onclick="pinKey('4')">4</div><div class="pin-key" onclick="pinKey('5')">5</div><div class="pin-key" onclick="pinKey('6')">6</div>
+      <div class="pin-key" onclick="pinKey('7')">7</div><div class="pin-key" onclick="pinKey('8')">8</div><div class="pin-key" onclick="pinKey('9')">9</div>
+      <div class="pin-key empty"></div><div class="pin-key" onclick="pinKey('0')">0</div><div class="pin-key del" onclick="pinDel()">⌫</div>
+    </div>
+    <button class="pin-cancel" onclick="closePinModal()">Annuler</button>
+  </div>
+</div>
+<div class="modal-overlay" id="choice-modal">
+  <div class="choice-modal">
+    <div class="modal-pill"></div>
+    <div class="modal-title" id="choice-title"></div>
+    <div class="modal-sub" id="choice-date" style="margin-bottom:6px"></div>
+    <div style="text-align:center;font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--green);margin-bottom:20px">15 000 gourdes</div>
+    <div class="choice-btns">
+      <button class="choice-btn choice-btn-ok" onclick="finalConfirm(true)"><span class="choice-btn-icon">✅</span>Payé</button>
+      <button class="choice-btn choice-btn-no" onclick="finalConfirm(false)"><span class="choice-btn-icon">❌</span>Non payé</button>
+    </div>
+    <button class="choice-cancel" onclick="closeChoiceModal()">Annuler</button>
+  </div>
+</div>
+<script>
+const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const PIN_ACTION='2004';
+const PIN_MODIFY='1234';
+function genSamedis(){const d=[];let dt=new Date(2026,4,16);for(let i=0;i<96;i++){d.push(new Date(dt));dt.setDate(dt.getDate()+7);}return d;}
+function fmt(d){return `Samedi ${d.getDate()} ${MOIS[d.getMonth()]} ${d.getFullYear()}`;}
+function fmtShort(d){return `${d.getDate()} ${MOIS[d.getMonth()].slice(0,3)}. ${d.getFullYear()}`;}
+const samedis=genSamedis();
+let state={};
+try{state=JSON.parse(localStorage.getItem('moto_v4')||'{}');}catch(e){}
+function save(){try{localStorage.setItem('moto_v4',JSON.stringify(state));}catch(e){}}
+const NOW=new Date();NOW.setHours(0,0,0,0);
+function isSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function isPast(d){return d<NOW&&!isSameDay(d,NOW);}
+function isToday(d){return isSameDay(d,NOW);}
+function isFuture(d){return d>NOW&&!isSameDay(d,NOW);}
+let pinBuffer='',pinMode=null,pendingIdx=null;
+function updateDots(c){for(let i=0;i<4;i++){const dot=document.getElementById('d'+i);dot.className='pin-dot';if(i<pinBuffer.length)dot.classList.add(c||'filled');}}
+function pinKey(k){if(pinBuffer.length>=4)return;pinBuffer+=k;updateDots('filled');document.getElementById('pin-err').textContent='';if(pinBuffer.length===4)setTimeout(checkPin,150);}
+function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updateDots('filled');}
+function checkPin(){const exp=pinMode==='modify'?PIN_MODIFY:PIN_ACTION;if(pinBuffer===exp){updateDots('success');setTimeout(()=>{closePinModal();openChoiceModal();},400);}else{updateDots('error');document.getElementById('pin-err').textContent='❌ Code incorrect — réessayez';setTimeout(()=>{pinBuffer='';updateDots();},800);}}
+function closePinModal(){document.getElementById('pin-modal').classList.remove('open');pinBuffer='';updateDots();document.getElementById('pin-err').textContent='';}
+function openPinModal(idx,isManual,mode){pendingIdx=idx;pinMode=mode;pinBuffer='';updateDots();document.getElementById('pin-err').textContent='';
+if(mode==='modify'){document.getElementById('pin-icon').textContent='🔓';document.getElementById('pin-title').textContent='Modifier le choix';document.getElementById('pin-sub').textContent='Entrez le code de modification';}
+else{document.getElementById('pin-icon').textContent='🔐';document.getElementById('pin-title').textContent='Confirmer le paiement';document.getElementById('pin-sub').textContent='Entrez le code pour valider';}
+document.getElementById('pin-modal').classList.add('open');}
+function openChoiceModal(){const d=samedis[pendingIdx];const ex=state[pendingIdx];document.getElementById('choice-title').textContent=ex!==undefined?`Modifier — Paiement N° ${pendingIdx+1}`:`Paiement N° ${pendingIdx+1}`;document.getElementById('choice-date').textContent=fmt(d);document.getElementById('choice-modal').classList.add('open');}
+function closeChoiceModal(){document.getElementById('choice-modal').classList.remove('open');}
+function finalConfirm(paid){if(pendingIdx===null)return;state[pendingIdx]=paid?'paid':'unpaid';save();closeChoiceModal();render();}
+function triggerAction(idx,isManual){const ex=state[idx];openPinModal(idx,isManual,ex!==undefined?'modify':'action');}
+function updateStats(){let paid=0,unpaid=0;for(let k in state){if(state[k]==='paid')paid++;else if(state[k]==='unpaid')unpaid++;}const confirmed=paid+unpaid;document.getElementById('s-paid').textContent=paid;document.getElementById('s-unpaid').textContent=unpaid;document.getElementById('s-total').textContent=(paid*15000).toLocaleString('fr')+' G';document.getElementById('prog-txt').textContent=`${confirmed} / 96 paiements`;document.getElementById('prog-bar').style.width=(confirmed/96*100)+'%';document.getElementById('prog-pct').textContent=Math.round(confirmed/96*100)+'%';}
+function renderAlerts(){const zone=document.getElementById('alert-zone');const list=samedis.map((d,i)=>({d,i})).filter(({d,i})=>(isPast(d)||isToday(d))&&state[i]==='unpaid');if(!list.length){zone.innerHTML='';return;}zone.innerHTML=`<div class="alert-banner"><span style="font-size:1.1rem;flex-shrink:0">⚠️</span><div class="alert-text"><strong>${list.length} samedi(s) non payé(s) — À régulariser</strong>${list.map(({d,i})=>`• Paiement N°${i+1} — ${fmtShort(d)}`).join('<br>')}</div></div>`;}
+function renderToday(){const zone=document.getElementById('today-zone');const ti=samedis.findIndex(d=>isToday(d));if(ti===-1){zone.innerHTML='';return;}const s=state[ti];const sl=s==='paid'?`<div style="background:#064e3b;border-radius:12px;padding:12px;text-align:center;color:#34d399;font-weight:700;font-size:.95rem">✅ Payé — <span style="font-size:.75rem;cursor:pointer;text-decoration:underline" onclick="triggerAction(${ti},false)">Modifier 🔓</span></div>`:s==='unpaid'?`<div style="background:#450a0a;border-radius:12px;padding:12px;text-align:center;color:#fca5a5;font-weight:700;font-size:.95rem">❌ Non payé — <span style="font-size:.75rem;cursor:pointer;text-decoration:underline" onclick="triggerAction(${ti},false)">Modifier 🔓</span></div>`:`<div class="btn-row"><button class="btn-confirm" onclick="triggerAction(${ti},false)">✅ Confirmer payé</button><button class="btn-reject" onclick="triggerAction(${ti},false)">❌ Non payé</button></div>`;zone.innerHTML=`<div class="today-card" style="margin:14px 20px 0"><div class="today-label">📅 Paiement du jour</div><div class="today-date">${fmt(samedis[ti])}</div><div class="today-num">Paiement N° ${ti+1} sur 96</div><div class="today-amount">15 000 gourdes</div>${sl}</div>`;}
+function render(){updateStats();renderAlerts();renderToday();const container=document.getElementById('months');let html='';for(let m=0;m<24;m++){const group=samedis.slice(m*4,m*4+4);const d0=group[0],d3=group[3];const range=`${MOIS[d0.getMonth()].slice(0,3)}. — ${MOIS[d3.getMonth()].slice(0,3)}. ${d3.getFullYear()}`;let paidC=0,unpaidC=0,futureC=0;group.forEach((_,i)=>{const s=state[m*4+i];if(s==='paid')paidC++;else if(s==='unpaid')unpaidC++;else if(isFuture(group[i]))futureC++;});let badge='',cardClass='';if(paidC===4){badge='<span class="month-badge badge-complete">✓ Complet</span>';cardClass='complete';}else if(unpaidC>0){badge=`<span class="month-badge badge-unpaid">⚠ ${unpaidC} impayé</span>`;cardClass='has-unpaid';}else if(futureC===4){badge='<span class="month-badge badge-future">🔒 À venir</span>';}else{badge=`<span class="month-badge badge-partial">${paidC+unpaidC}/4</span>`;}html+=`<div class="month-card ${cardClass}"><div class="month-hdr" onclick="toggleMonth(${m})"><div class="month-hdr-left"><span class="month-num">MOIS ${m+1}</span><span class="month-range">${range}</span></div><div style="display:flex;align-items:center;gap:8px">${badge}<span id="arrow-${m}" style="color:var(--muted);font-size:.8rem">▾</span></div></div><div class="month-body" id="mbody-${m}" style="display:none">`;group.forEach((d,i)=>{const idx=m*4+i;const s=state[idx];const today=isToday(d),past=isPast(d),future=isFuture(d);let indClass,indIcon,dateClass='',amtClass='',extra='';if(s==='paid'){indClass='ind-paid';indIcon='✓';dateClass='paid';extra=`<span class="lock-tag" onclick="triggerAction(${idx},true)">🔓 Modifier</span>`;}else if(s==='unpaid'){indClass='ind-unpaid';indIcon='✕';dateClass='unpaid-txt';amtClass='unpaid-amt';extra=`<span class="regularize-tag">⚠ À régulariser</span><br><span class="lock-tag" onclick="triggerAction(${idx},true)">🔓 Modifier</span>`;}else if(today){indClass='ind-today';indIcon='●';extra=`<div class="past-btn-row"><button class="mini-btn mini-btn-ok" onclick="triggerAction(${idx},false)">✅ Confirmer</button><button class="mini-btn mini-btn-no" onclick="triggerAction(${idx},false)">❌ Non payé</button></div>`;}else if(past){indClass='ind-past';indIcon='?';extra=`<div class="past-btn-row"><button class="mini-btn mini-btn-ok" onclick="triggerAction(${idx},true)">✅ Payé</button><button class="mini-btn mini-btn-no" onclick="triggerAction(${idx},true)">❌ Non payé</button></div>`;}else{indClass='ind-future';indIcon='○';dateClass='future-txt';amtClass='future-amt';}html+=`<div class="sat-row"><div class="sat-indicator ${indClass}">${indIcon}</div><div class="sat-info"><div class="sat-num-lbl">Paiement N° ${idx+1}</div><div class="sat-date-txt ${dateClass}">${fmt(d)}</div>${extra}</div><div class="sat-amount-lbl ${amtClass}">${future&&s===undefined?'—':'15 000 G'}</div></div>`;});html+=`<div class="month-total"><span class="mtotal-lbl">TOTAL MOIS ${m+1}</span><span class="mtotal-val">60 000 gourdes</span></div><div class="sig-section"><div class="date-cloture">📅 Date de clôture : ___________________________________</div><div class="sig-grid"><div class="sig-box"><div class="sig-title">Signature Preneur</div><div class="sig-sub">Lu et approuvé</div><div class="sig-line"></div></div><div class="sig-box"><div class="sig-title">Signature Bailleur</div><div class="sig-sub">Cachet et signature</div><div class="sig-line"></div></div></div></div></div></div>`;}container.innerHTML=html;const ti=samedis.findIndex(d=>isToday(d));if(ti>=0){const body=document.getElementById(`mbody-${Math.floor(ti/4)}`);if(body)body.style.display='';};}
+function toggleMonth(m){const body=document.getElementById(`mbody-${m}`);const arrow=document.getElementById(`arrow-${m}`);const open=body.style.display!=='none';body.style.display=open?'none':'';arrow.textContent=open?'▾':'▴';}
+document.getElementById('pin-modal').addEventListener('click',function(e){if(e.target===this)closePinModal();});
+document.getElementById('choice-modal').addEventListener('click',function(e){if(e.target===this)closeChoiceModal();});
+render();
+</script>
+</body>
+</html>
